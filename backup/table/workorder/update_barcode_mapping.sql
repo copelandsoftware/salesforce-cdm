@@ -1,0 +1,1 @@
+alter table jam.MSS_BARCODE_MAPPING add SF_SITE_ID VARCHAR2(18);

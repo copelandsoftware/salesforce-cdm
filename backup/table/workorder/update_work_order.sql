@@ -1,0 +1,1 @@
+alter table jam.SF_WORK_ORDER add RETRY_TIME NUMBER(2);

@@ -1,0 +1,1 @@
+alter table sf_customer modify sf_cust_name varchar2(200);

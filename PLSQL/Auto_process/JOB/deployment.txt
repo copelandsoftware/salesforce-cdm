@@ -1,0 +1,71 @@
+---------------------------------deployment---------------------------------------------------------------------
+--update data
+UPDATE SF_MESSAGE_CONFIG SET APPROVED_IND='Approved' WHERE APPROVED_IND is null or APPROVED_IND='A';
+UPDATE SF_ALARM_EMAIL_DELIVERY SET APPROVED_IND='Approved';
+
+--stop exiting jobs
+	exec dbms_scheduler.stop_job('SF_AUTOPROCESS_PROGRAM',true);
+	BEGIN
+      DBMS_SCHEDULER.disable(name=>'"JAM"."SF_AUTOPROCESS_PROGRAM"', force => TRUE)
+    END;
+	/
+	exec dbms_scheduler.stop_job('SF_AUTOPROCESS_ADM_ALARMS_JOB',true);
+	BEGIN
+	  DBMS_SCHEDULER.disable(name=>'"JAM"."SF_AUTOPROCESS_ADM_ALARMS_JOB"', force => TRUE)
+    END;
+
+--deploy new package and job
+  --run script:
+  --1. SF_AUTOPROCESS_ALARMS_ALL_PKG.pks
+  --2. SF_AUTOPROCESS_ALARMS_ALL_PKG.pkb
+  --3. SF_AUTOPROCESS_ADM_JOB.sql
+  --4. SF_AUTOPROCESS_NON_ADM_JOB.sql
+  
+
+--check run log and make sure new job work
+  --in case, the job doesn't start, run below:
+  --run the job
+  exec dbms_scheduler.run_job('SF_AUTOPROCESS_ADM_CUST');
+  exec dbms_scheduler.run_job('SF_AUTOPROCESS_NON_ADM_CUST');
+
+------------------------------------rollback plan-----------------------------------------------------------------------------
+
+--rollback in case:
+    --stop new jobs:
+    exec dbms_scheduler.stop_job('SF_AUTOPROCESS_ADM_CUST',true);
+	BEGIN
+	  DBMS_SCHEDULER.disable(name=>'"JAM"."SF_AUTOPROCESS_ADM_CUST"', force => TRUE)
+    END;
+	
+	exec dbms_scheduler.stop_job('SF_AUTOPROCESS_NON_ADM_CUST',true);
+	BEGIN
+	  DBMS_SCHEDULER.disable(name=>'"JAM"."SF_AUTOPROCESS_NON_ADM_CUST"', force => TRUE)
+    END;
+	
+	--start old jobs:
+	BEGIN
+      DBMS_SCHEDULER.enable(name=>'"JAM"."SF_AUTOPROCESS_PROGRAM"');
+    END;
+	exec dbms_scheduler.run_job('SF_AUTOPROCESS_PROGRAM');
+	
+	BEGIN
+      DBMS_SCHEDULER.enable(name=>'"JAM"."SF_AUTOPROCESS_ADM_ALARMS_JOB"');
+    END;
+    exec dbms_scheduler.run_job('SF_AUTOPROCESS_ADM_ALARMS_JOB');
+
+
+--run few days, if every thing look good, drop old jobs and package:
+  --drop jobs:
+  BEGIN
+    DBMS_SCHEDULER.DROP_JOB(job_name => '"JAM"."SF_AUTOPROCESS_PROGRAM"',
+                                defer => false,
+                                force => true);
+    DBMS_SCHEDULER.DROP_JOB(job_name => '"JAM"."SF_AUTOPROCESS_ADM_ALARMS_JOB"',
+                                defer => false,
+                                force => true);
+  END;
+  --drop packages:
+  drop package "JAM"."SF_AUTOPROCESS_ALARMS_PKG";
+  drop package "JAM"."SF_AUTOPROCESS_ADM_ALARMS_PKG"
+
+  

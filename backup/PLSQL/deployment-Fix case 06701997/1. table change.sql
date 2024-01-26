@@ -1,0 +1,1 @@
+alter table jam.sf_site_last_communication add SF_CUST_ID VARCHAR2(18);

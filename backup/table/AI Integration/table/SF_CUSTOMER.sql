@@ -1,0 +1,3 @@
+alter table jam.SF_CUSTOMER add SNOOZE_AMOUNT NUMBER(5);
+alter table jam.SF_CUSTOMER add SNOOZE_ENABLE VARCHAR2(2);
+alter table jam.SF_CUSTOMER add SUPPORT_RTN_NON_CPC NUMBER(1);

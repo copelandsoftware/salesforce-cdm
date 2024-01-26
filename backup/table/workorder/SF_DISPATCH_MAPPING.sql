@@ -1,0 +1,51 @@
+CREATE TABLE SF_DISPATCH_MAPPING
+(
+  SF_DIS_MAP_ID       VARCHAR2(18)
+ ,SF_NAME             VARCHAR2(255)
+ ,SF_CUST_ID          VARCHAR2(18)
+ ,SF_VALUE            VARCHAR2(255)
+ ,EXTERNAL_VALUE      VARCHAR2(255)
+ ,CATEGORY            VARCHAR2(255)
+ ,FIELD_TYPE          VARCHAR2(255)
+ ,IS_ACTIVE           VARCHAR2(255)
+ ,created_on 		       DATE
+ ,created_by 		       VARCHAR2(50)
+ ,modified_on              DATE
+ ,modified_by              VARCHAR2(50)
+)
+PCTFREE 10
+INITRANS 1
+MAXTRANS 255
+TABLESPACE SFRCD01
+STORAGE(INITIAL 16M
+        NEXT 8M
+        MINEXTENTS 1
+        MAXEXTENTS UNLIMITED
+        PCTINCREASE 0
+        )
+/
+
+ALTER TABLE SF_DISPATCH_MAPPING ADD (
+  PRIMARY KEY
+  (SF_DIS_MAP_ID)
+  USING INDEX
+    TABLESPACE SFRCX01
+    PCTFREE    10
+    INITRANS   2
+    MAXTRANS   255
+    STORAGE    (
+                INITIAL          16M
+                NEXT             8M
+                MINEXTENTS       1
+                MAXEXTENTS       UNLIMITED
+                PCTINCREASE      0
+                BUFFER_POOL      DEFAULT
+               )
+  ENABLE VALIDATE)
+  
+/
+
+ALTER TABLE SF_DISPATCH_MAPPING ADD CONSTRAINT REF_SF_DIS_MAP_FK1
+    FOREIGN KEY (SF_CUST_ID)
+    REFERENCES SF_CUSTOMER(SF_CUST_ID)
+/

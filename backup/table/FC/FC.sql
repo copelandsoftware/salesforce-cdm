@@ -1,0 +1,1 @@
+alter table jam.sf_site_last_communication add processed_flag  VARCHAR2(10);
