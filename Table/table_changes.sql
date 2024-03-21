@@ -99,3 +99,8 @@ alter table sf_alarm_email_delivery modify APPROVED_IND varchar2(20);
 /
 --ADM support controllers configuration
 Insert into MSS_SYS_CONFIG (SYS_CONFIG_ID,SYS_CONFIG_TYPE_CD,SYS_CONFIG_CD,SERVICE_PROVIDER_ID,SYS_CONFIG_VALUE,STATUS_CD,CREATED_BY,CREATED_ON,MODIFIED_BY,MODIFIED_ON,REQUEST_ID,PROGRAM_APP_ID,VERSION_NUMBER,CUST_ID) values (111,'ADM','SUPPORT_CONTROLLER',null,'E2;E3;Site Supv','1','SEEDED',sysdate,'SEEDED',sysdate,null,null,null,null);
+
+--KT auto email without Salesforce
+alter table jam.SF_NORM_ALARM add auto_email_cdm_flag varchar2(10);
+
+Insert into MSS_SYS_CONFIG (SYS_CONFIG_ID,SYS_CONFIG_TYPE_CD,SYS_CONFIG_CD,SERVICE_PROVIDER_ID,SYS_CONFIG_VALUE,STATUS_CD,CREATED_BY,CREATED_ON,MODIFIED_BY,MODIFIED_ON,REQUEST_ID,PROGRAM_APP_ID,VERSION_NUMBER,CUST_ID) values (111,'AutoEmailCDM','SUPPORT_CUSTOMER',null,'Kwik Trip, Inc','1','SEEDED',sysdate,'SEEDED',sysdate,null,null,null,null);

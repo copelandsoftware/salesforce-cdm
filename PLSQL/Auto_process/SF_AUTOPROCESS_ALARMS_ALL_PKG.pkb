@@ -78,6 +78,7 @@ AS
    --g_time_available_process  g_varchar_type;
    g_email_alarm_flag             g_varchar_type;-- gary sun added by email rule
    g_auto_email_alarm_flag        g_varchar_type;
+   g_auto_email_cdm_cust          g_varchar_type;
    g_email_alarm_address          g_varchar_type;
    g_include_val                  NUMBER := 1;
    g_repeat_age                   NUMBER;
@@ -2434,12 +2435,14 @@ END CLOSE_LOG_FILE;
 --Gary Sun 2023-06-19 check auto email rules
 PROCEDURE check_auto_email_alarms (p_alm_id            IN     NUMBER,
                                      p_cust_id           IN     VARCHAR2,
+                                     p_site_id         IN     VARCHAR2,
                                      p_desc              IN     VARCHAR2,
                                      p_source            IN     VARCHAR2,
                                      p_created_on        IN     DATE,
                                      p_time_received	 IN 	DATE,
                                      o_return_status     OUT VARCHAR2,
-                                     o_auto_email_flag     OUT VARCHAR2
+                                     o_auto_email_flag     OUT VARCHAR2,
+                                     o_auto_email_cdm_cust OUT VARCHAR2
                                      )
    IS
     CURSOR rc_auto_email_rules
@@ -2451,7 +2454,7 @@ PROCEDURE check_auto_email_alarms (p_alm_id            IN     NUMBER,
              AND p_time_received BETWEEN mmc.start_date
              AND  NVL (mmc.end_date,(p_time_received + 1))
              AND mmc.AUTO_EMAIL_CRITERIA IS NOT NULL
-             AND mmc.sf_site_id IS NULL
+             AND NVL(mmc.sf_site_id,p_site_id) =p_site_id
         ORDER BY DECODE(AUTO_EMAIL_CRITERIA,g_cariteria_description,1,g_cariteria_source,2,g_cariteria_sourceDescr,3,4) ASC;
 
     CURSOR rc_auto_email_specific_rules
@@ -2463,12 +2466,18 @@ PROCEDURE check_auto_email_alarms (p_alm_id            IN     NUMBER,
              AND p_time_received BETWEEN mmc.start_date
              AND  NVL (mmc.end_date,(p_time_received + 1))
              AND mmc.AUTO_EMAIL_CRITERIA IS NULL
-             AND mmc.sf_site_id IS NULL
+             AND NVL(mmc.sf_site_id,p_site_id) =p_site_id
              AND AUTO_EMAIL_DESCRIPTION IS NULL
              AND AUTO_EMAIL_SOURCE IS NULL;
      v_delimiter VARCHAR2(2) :=';;';
    BEGIN
     o_auto_email_flag :='N';
+    o_auto_email_cdm_cust :='N';
+    FOR cdm_cust in (select SYS_CONFIG_VALUE from mss_sys_config msc,sf_customer sc where msc.SYS_CONFIG_VALUE=sc.sf_cust_name and sc.sf_cust_id= p_cust_id
+                     and SYS_CONFIG_TYPE_CD='AutoEmailCDM' and SYS_CONFIG_CD='SUPPORT_CUSTOMER')
+    LOOP
+      o_auto_email_cdm_cust:='Y';
+    END LOOP;
     --alarm will be auto email when there is none value of criteria and both source and description are blank.
     FOR r_auto_email_s_rule IN rc_auto_email_specific_rules LOOP
       o_auto_email_flag :='Y';
@@ -3625,7 +3634,9 @@ PROCEDURE check_mobile_alarms (  p_alm_id            IN     NUMBER,
                   DECODE (g_processed_flag (i),'P', g_time_available_process (i),time_available_process),
                   sf_routing_group = g_routing_group (i),
                   email_processed=DECODE(g_email_alarm_flag(i),'Y','Y','N'),
-                  auto_email_flag=DECODE(g_processed_flag (i)||g_auto_email_alarm_flag(i),'PY','YQ','PMLY','YQ','MY','YQ','YAE','YQ','N'),
+                  auto_email_flag=DECODE(g_processed_flag (i)||g_auto_email_alarm_flag(i)||g_auto_email_cdm_cust(i),'PYN','YQ','PMLYN','YQ','MYN','YQ','YAEN','YQ','PYY','Y','PMLYY','Y','MYY','Y','YAEY','Y','N'),
+                  --YH means this alarm will send to ADM model where decide if will send auto email
+                  auto_email_cdm_flag=DECODE(g_processed_flag (i)||g_auto_email_alarm_flag(i)||g_auto_email_cdm_cust(i),'PYY','YQ','PMLYY','YH','MYY','YQ','YAEY','YQ','N'),
                   EMAIL_ALERT_ID=g_email_alarm_address(i),
                   LAST_ACTION_NAME =DECODE(g_processed_flag(i),'Y',g_last_action_name(i),null),
                   LAST_ACTION_COMMENTS=DECODE(g_processed_flag(i),'Y',g_last_action_comments(i),null),
@@ -3656,6 +3667,7 @@ PROCEDURE check_mobile_alarms (  p_alm_id            IN     NUMBER,
          g_routing_group (i)      := NULL;
          g_email_alarm_flag(i)     := NULL;
          g_auto_email_alarm_flag(i)     := NULL;
+         g_auto_email_cdm_cust(i) :=NULL;
          g_email_alarm_address(i)  :=NULL;
       END LOOP;
 
@@ -3776,6 +3788,7 @@ PROCEDURE check_mobile_alarms (  p_alm_id            IN     NUMBER,
       v_max_alarm              NUMBER  := 0;
       v_email_alarm_flag       VARCHAR2 (10);
       v_auto_email_alarm_flag  VARCHAR2 (10);
+      v_auto_email_cdm_cust    VARCHAR2 (10);
       v_sc_alarm_flag          VARCHAR2 (10);
       v_email_address          VARCHAR2 (2000);
 
@@ -4433,14 +4446,17 @@ PROCEDURE check_mobile_alarms (  p_alm_id            IN     NUMBER,
             check_auto_email_alarms (
                p_alm_id              => lt_alarm_id(i),
                p_cust_id               => lt_cust_id(i),
+               p_site_id               => lt_site_id(i),
                p_desc                  => lt_descr(i),
                p_source                  => lt_source(i),
                p_created_on            => lt_created_on(i),
                p_time_received	       => lt_time_received(i),
                o_return_status         => v_return_status,
-               o_auto_email_flag        => v_auto_email_alarm_flag
+               o_auto_email_flag        => v_auto_email_alarm_flag,
+               o_auto_email_cdm_cust    => v_auto_email_cdm_cust
             );
             g_auto_email_alarm_flag(g_alarm_count):=v_auto_email_alarm_flag;
+            g_auto_email_cdm_cust(g_alarm_count):=v_auto_email_cdm_cust;
 
             IF g_processed_flag(g_alarm_count) ='P' AND v_auto_email_alarm_flag ='Y' THEN
                IF (admFlag = 'N') OR (admFlag = 'Y' AND v_adm_flag !='Y') THEN
@@ -4455,11 +4471,13 @@ PROCEDURE check_mobile_alarms (  p_alm_id            IN     NUMBER,
             dbms_output.put_line( 'Auto email flag :' || v_email_alarm_flag );
             dbms_output.put_line( 'Auto processed flag==== :' || g_processed_flag (g_alarm_count) );
          dbms_output.put_line( 'Auto email flag==== :' || g_auto_email_alarm_flag (g_alarm_count) );
+          dbms_output.put_line( 'Auto email cdm cust==== :' || g_auto_email_cdm_cust (g_alarm_count) );
           ELSE
             g_email_alarm_flag(g_alarm_count):= 'N';
             g_email_alarm_address(g_alarm_count):= NULL;
 
             g_auto_email_alarm_flag(g_alarm_count):='N';
+            g_auto_email_cdm_cust(g_alarm_count):='N';
           END IF;
 
          v_processed_alarms := v_processed_alarms + 1;
