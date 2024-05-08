@@ -104,3 +104,11 @@ Insert into MSS_SYS_CONFIG (SYS_CONFIG_ID,SYS_CONFIG_TYPE_CD,SYS_CONFIG_CD,SERVI
 alter table jam.SF_NORM_ALARM add auto_email_cdm_flag varchar2(10);
 
 Insert into MSS_SYS_CONFIG (SYS_CONFIG_ID,SYS_CONFIG_TYPE_CD,SYS_CONFIG_CD,SERVICE_PROVIDER_ID,SYS_CONFIG_VALUE,STATUS_CD,CREATED_BY,CREATED_ON,MODIFIED_BY,MODIFIED_ON,REQUEST_ID,PROGRAM_APP_ID,VERSION_NUMBER,CUST_ID) values (111,'AutoEmailCDM','SUPPORT_CUSTOMER',null,'Kwik Trip, Inc','1','SEEDED',sysdate,'SEEDED',sysdate,null,null,null,null);
+
+--ADM Dwell time
+--The format is: <customer_id>#<dwell_time>#<alarm types>, if support all alarm types, use 'ALL', if support part of multiple alarm types, divide it with a semicolon, such as '001f4000009U70iAAC#90#a1;a2'
+Insert into MSS_SYS_CONFIG (SYS_CONFIG_ID,SYS_CONFIG_TYPE_CD,SYS_CONFIG_CD,SERVICE_PROVIDER_ID,SYS_CONFIG_VALUE,STATUS_CD,CREATED_BY,CREATED_ON,MODIFIED_BY,MODIFIED_ON,REQUEST_ID,PROGRAM_APP_ID,VERSION_NUMBER,CUST_ID)
+values (111,'ADM','DwellTimeByCustomer',null,'001f4000009U70iAAC#90#ALL','1','SEEDED',sysdate,'SEEDED',sysdate,null,null,null,null);
+--The default dwell time is 55 minutes
+Insert into MSS_SYS_CONFIG (SYS_CONFIG_ID,SYS_CONFIG_TYPE_CD,SYS_CONFIG_CD,SERVICE_PROVIDER_ID,SYS_CONFIG_VALUE,STATUS_CD,CREATED_BY,CREATED_ON,MODIFIED_BY,MODIFIED_ON,REQUEST_ID,PROGRAM_APP_ID,VERSION_NUMBER,CUST_ID)
+values (112,'ADM','DefaultDwellTime',null,'55','1','SEEDED',sysdate,'SEEDED',sysdate,null,null,null,null);
