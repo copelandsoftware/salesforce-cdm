@@ -167,6 +167,7 @@ AS
     v_cnt number(10) := 0;
     
     v_gmt_now date :=F_Get_Timezone(sysdate); 
+    v_est_now date :=TO_DATE(LOCALTIMESTAMP AT TIME ZONE 'US/Eastern', 'yyyy-mm-dd HH24:MI:SS');
 
 	CURSOR c_failed_stores IS
     SELECT
@@ -270,9 +271,9 @@ AS
             'CDM Store Procedure',
             'Lost connectivity',
             failed_rec.ip_address,
-            sysdate,
-            sysdate,
-            sysdate,
+            v_est_now,
+            v_est_now,
+            v_est_now,
             'Nagios',
             NULL,
             'Alarm',
