@@ -3116,7 +3116,7 @@ PROCEDURE check_mobile_alarms (  p_alm_id            IN     NUMBER,
                                                  || v_delimiter
                                                  || ']+', 1, level) IS NOT NULL
             )LOOP
-              IF instr(UPPER(p_desc),UPPER(support_description.in_d)) > 0 THEN
+              IF instr(UPPER(p_desc),UPPER(support_description.in_d)) > 0 OR REGEXP_LIKE(p_desc, support_description.in_d) THEN
                 v_adm_ml_support:='Y';
               END IF;
             END LOOP;
