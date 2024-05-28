@@ -2469,6 +2469,20 @@ PROCEDURE check_auto_email_alarms (p_alm_id            IN     NUMBER,
              AND NVL(mmc.sf_site_id,p_site_id) =p_site_id
              AND AUTO_EMAIL_DESCRIPTION IS NULL
              AND AUTO_EMAIL_SOURCE IS NULL;
+
+    CURSOR c_emailduplicate is
+      SELECT
+        max(repeat_duplicate_timer) duptimer
+    from
+      SF_MESSAGE_CONFIG smc
+    where
+               sf_cust_id = p_cust_id
+               and message_type = 'EmailDuplicate'
+               and is_exclude = 'true'
+    and UPPER (approved_ind) =g_rule_approved_status
+               AND get_timezones_GMT_TO_SERVER(p_created_on) BETWEEN smc.start_date AND  NVL ( smc.end_date, (p_created_on + 1) );
+
+     v_dupflag VARCHAR2(1);
      v_delimiter VARCHAR2(2) :=';;';
    BEGIN
     o_auto_email_flag :='N';
@@ -2535,6 +2549,45 @@ PROCEDURE check_auto_email_alarms (p_alm_id            IN     NUMBER,
         EXIT WHEN o_auto_email_flag = 'Y';
       END LOOP;
     END IF;
+   IF o_auto_email_flag = 'Y' THEN
+        v_dupflag := 'N';
+        FOR emd_rec in c_emailduplicate LOOP
+
+           BEGIN
+
+             SELECT
+               'Y'
+             INTO
+               v_dupflag
+             FROM
+             JAM.SF_NORM_ALARM N
+             WHERE
+              n.sf_cust_id = p_cust_id
+              and n.sf_site_id = p_site_id
+              and n.DESCR = p_desc
+              and n.source = p_source
+              and n.processed_flag in ( 'PQ','YQ','P','Y','PML','PMLQ','ADM_HOLDING','ADM_PENDING')
+              and n.auto_email_flag in ('YQ','Y')
+              and n.alarm_id < p_alm_id
+              and n.created_on > (sysdate-2)
+              and rownum < 2
+              AND ( (p_time_received - n.time_received) * 86400) < emd_rec.duptimer;
+
+              o_auto_email_flag:='N';
+
+           EXCEPTION
+                        WHEN NO_DATA_FOUND THEN
+                          v_dupflag := 'N';
+                        WHEN OTHERS THEN
+                                        v_dupflag := 'N';
+                                        WRITE_LOG_FILE(file_name => v_file_name
+                                              ,info     => ' There is no auto email duplicate alarms '
+                                              ,o_return_status  => v_return_status
+                             ) ;
+           END;
+        END LOOP;
+    END IF;
+
    o_return_status := 'S';
    EXCEPTION
       WHEN OTHERS
@@ -3251,7 +3304,7 @@ PROCEDURE check_mobile_alarms (  p_alm_id            IN     NUMBER,
                                                  || v_delimiter
                                                  || ']+', 1, level) IS NOT NULL
             )LOOP
-              IF instr(UPPER(p_desc),UPPER(support_description.in_d)) > 0 THEN
+              IF instr(UPPER(p_desc),UPPER(support_description.in_d)) > 0 OR REGEXP_LIKE(p_desc, support_description.in_d) THEN
                 v_adm_ml_support:='Y';
               END IF;
             END LOOP;
