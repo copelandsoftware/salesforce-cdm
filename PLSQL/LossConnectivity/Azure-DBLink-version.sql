@@ -125,7 +125,7 @@ AS
   EXCEPTION WHEN NO_DATA_FOUND THEN
          p_sender := 'CDM database server';
   END get_sender_p;
-  
+
    --
    --Get Timezone
    --
@@ -165,9 +165,9 @@ AS
     v_sender    VARCHAR2(100);
 
     v_cnt number(10) := 0;
-    
-    v_gmt_now date :=F_Get_Timezone(sysdate); 
-    v_est_now date :=TO_DATE(LOCALTIMESTAMP AT TIME ZONE 'US/Eastern', 'yyyy-mm-dd HH24:MI:SS');
+
+    v_gmt_now date :=systimestamp AT TIME ZONE 'GMT';
+    v_est_now date :=LOCALTIMESTAMP AT TIME ZONE 'US/Eastern';
 
 	CURSOR c_failed_stores IS
     SELECT
@@ -219,10 +219,10 @@ AS
                       chr(13) || chr(10)||'----------------------------------------------------------------------------------';
 
     WRITE_LOG_FILE(file_name => v_file_name,info     => g_ctr_info_msz ,o_return_status  => v_return_status) ;
-    
+
     get_sender_p(p_sender =>v_sender);
-    
-    
+
+
 
     FOR failed_rec in c_failed_stores LOOP
         INSERT INTO RAW_ALARM@"JAM_TO_UARD" (
