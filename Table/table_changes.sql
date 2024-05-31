@@ -103,6 +103,8 @@ Insert into MSS_SYS_CONFIG (SYS_CONFIG_ID,SYS_CONFIG_TYPE_CD,SYS_CONFIG_CD,SERVI
 --KT auto email without Salesforce
 alter table jam.SF_NORM_ALARM add auto_email_cdm_flag varchar2(10);
 
+alter table jam.SF_SITE add auto_email_address varchar2(400);
+
 Insert into MSS_SYS_CONFIG (SYS_CONFIG_ID,SYS_CONFIG_TYPE_CD,SYS_CONFIG_CD,SERVICE_PROVIDER_ID,SYS_CONFIG_VALUE,STATUS_CD,CREATED_BY,CREATED_ON,MODIFIED_BY,MODIFIED_ON,REQUEST_ID,PROGRAM_APP_ID,VERSION_NUMBER,CUST_ID) values (111,'AutoEmailCDM','SUPPORT_CUSTOMER',null,'Kwik Trip, Inc','1','SEEDED',sysdate,'SEEDED',sysdate,null,null,null,null);
 
 --ADM Dwell time
@@ -116,3 +118,5 @@ values (112,'ADM','DefaultDwellTime',null,'55','1','SEEDED',sysdate,'SEEDED',sys
 --Lost connectivity
 Insert into MSS_SYS_CONFIG (SYS_CONFIG_ID,SYS_CONFIG_TYPE_CD,SYS_CONFIG_CD,SERVICE_PROVIDER_ID,SYS_CONFIG_VALUE,STATUS_CD,CREATED_BY,CREATED_ON,MODIFIED_BY,MODIFIED_ON,REQUEST_ID,PROGRAM_APP_ID,VERSION_NUMBER,CUST_ID)
 values (111,'CDMServerHostName','CDMServerHostName',null,'Azure CDM Host(10.195.65.10)','1','SEEDED',sysdate,'SEEDED',sysdate,null,null,null,null);
+
+
