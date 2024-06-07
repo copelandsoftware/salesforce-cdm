@@ -2483,6 +2483,7 @@ PROCEDURE check_auto_email_alarms (p_alm_id            IN     NUMBER,
                AND get_timezones_GMT_TO_SERVER(p_created_on) BETWEEN smc.start_date AND  NVL ( smc.end_date, (p_created_on + 1) );
 
      v_dupflag VARCHAR2(1);
+
      v_delimiter VARCHAR2(2) :=';;';
    BEGIN
     o_auto_email_flag :='N';
@@ -2549,6 +2550,7 @@ PROCEDURE check_auto_email_alarms (p_alm_id            IN     NUMBER,
         EXIT WHEN o_auto_email_flag = 'Y';
       END LOOP;
     END IF;
+
    IF o_auto_email_flag = 'Y' THEN
         v_dupflag := 'N';
         FOR emd_rec in c_emailduplicate LOOP
@@ -2587,6 +2589,7 @@ PROCEDURE check_auto_email_alarms (p_alm_id            IN     NUMBER,
            END;
         END LOOP;
     END IF;
+
 
    o_return_status := 'S';
    EXCEPTION
@@ -4520,6 +4523,17 @@ PROCEDURE check_mobile_alarms (  p_alm_id            IN     NUMBER,
                   g_ins_current_status(g_alarm_count) := 'Resolved';
                 END IF;
             END IF;
+
+            --Resolve duplicated AUTO EMAIL alarm
+            IF v_auto_email_alarm_flag ='YD' THEN
+               g_processed_flag(g_alarm_count) := 'Y';
+               g_auto_email_alarm_flag(g_alarm_count) :='YD';
+               g_last_action_name(g_alarm_count) := 'DUPLICATE_RESOLVED';
+               g_last_action_comments(g_alarm_count) := 'Resolved by duplicated Email rule';
+               g_ins_current_status(g_alarm_count) := 'Resolved';
+            END IF;
+
+
 
             dbms_output.put_line( 'Auto email flag :' || v_email_alarm_flag );
             dbms_output.put_line( 'Auto processed flag==== :' || g_processed_flag (g_alarm_count) );
