@@ -2575,7 +2575,7 @@ PROCEDURE check_auto_email_alarms (p_alm_id            IN     NUMBER,
               and rownum < 2
               AND ( (p_time_received - n.time_received) * 86400) < emd_rec.duptimer;
 
-              o_auto_email_flag:='N';
+              o_auto_email_flag:='YD';
 
            EXCEPTION
                         WHEN NO_DATA_FOUND THEN
