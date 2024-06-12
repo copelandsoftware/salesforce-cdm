@@ -4525,7 +4525,7 @@ PROCEDURE check_mobile_alarms (  p_alm_id            IN     NUMBER,
             END IF;
 
             --Resolve duplicated AUTO EMAIL alarm
-            IF v_auto_email_alarm_flag ='YD' THEN
+            IF g_processed_flag(g_alarm_count) ='P' AND v_auto_email_alarm_flag ='YD' THEN
                g_processed_flag(g_alarm_count) := 'Y';
                g_auto_email_alarm_flag(g_alarm_count) :='YD';
                g_last_action_name(g_alarm_count) := 'DUPLICATE_RESOLVED';
