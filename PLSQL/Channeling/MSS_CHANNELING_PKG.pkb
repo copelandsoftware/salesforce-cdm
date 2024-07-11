@@ -719,6 +719,11 @@ create or replace PACKAGE BODY         MSS_CHANNELING_PKG AS
      	  o_sf_routing_group := g_sf_default_group;
      	end if;
 
+
+        if o_sf_routing_group is null then
+          o_sf_routing_group := g_sf_default_group;
+        end if;
+
      end if;
 
    EXCEPTION WHEN OTHERS THEN
