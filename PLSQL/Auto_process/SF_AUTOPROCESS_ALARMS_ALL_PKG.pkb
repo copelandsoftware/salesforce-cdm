@@ -3690,9 +3690,9 @@ PROCEDURE check_mobile_alarms (  p_alm_id            IN     NUMBER,
                   DECODE (g_processed_flag (i),'P', g_time_available_process (i),time_available_process),
                   sf_routing_group = g_routing_group (i),
                   email_processed=DECODE(g_email_alarm_flag(i),'Y','Y','N'),
-                  auto_email_flag=DECODE(g_processed_flag (i)||g_auto_email_alarm_flag(i)||g_auto_email_cdm_cust(i),'PYN','YQ','PMLYN','YQ','MYN','YQ','YAEN','YQ','PYY','Y','PMLYY','Y','MYY','Y','YAEY','Y','N'),
+                  auto_email_flag=DECODE(g_processed_flag (i)||g_auto_email_alarm_flag(i)||g_auto_email_cdm_cust(i),'PYN','YQ','PMLYN','YQ','MYN','YQ','YAEN','YQ','PYY','Y','PMLYY','Y','MYY','Y','YAEY','Y','YYRY','Y','N'),
                   --YH means this alarm will send to ADM model where decide if will send auto email
-                  auto_email_cdm_flag=DECODE(g_processed_flag (i)||g_auto_email_alarm_flag(i)||g_auto_email_cdm_cust(i),'PYY','YQ','PMLYY','YH','MYY','YQ','YAEY','YQ','N'),
+                  auto_email_cdm_flag=DECODE(g_processed_flag (i)||g_auto_email_alarm_flag(i)||g_auto_email_cdm_cust(i),'PYY','YQ','PMLYY','YH','MYY','YQ','YAEY','YQ','YYRY','YQ','N'),
                   EMAIL_ALERT_ID=g_email_alarm_address(i),
                   LAST_ACTION_NAME =DECODE(g_processed_flag(i),'Y',g_last_action_name(i),null),
                   LAST_ACTION_COMMENTS=DECODE(g_processed_flag(i),'Y',g_last_action_comments(i),null),
@@ -4525,13 +4525,18 @@ PROCEDURE check_mobile_alarms (  p_alm_id            IN     NUMBER,
             END IF;
 
             --Resolve duplicated AUTO EMAIL alarm
-            IF g_processed_flag(g_alarm_count) in ('P','PML') AND v_auto_email_alarm_flag ='YD' THEN
+            IF v_auto_email_alarm_flag ='YD' THEN
                g_processed_flag(g_alarm_count) := 'Y';
                g_auto_email_alarm_flag(g_alarm_count) :='YD';
                g_last_action_name(g_alarm_count) := 'DUPLICATE_RESOLVED';
                g_last_action_comments(g_alarm_count) := 'Resolved by duplicated Email rule';
                g_ins_current_status(g_alarm_count) := 'Resolved';
             END IF;
+
+            --auto email all Kwik Trip RTN alarms
+           IF v_rtn_date IS NOT NULL AND lt_cust_id(i) = '001f4000005i6CwAAI' THEN
+             g_auto_email_alarm_flag(g_alarm_count) :='YR';
+           END IF;
 
 
 
