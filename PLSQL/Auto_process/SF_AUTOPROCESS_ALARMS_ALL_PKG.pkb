@@ -4525,20 +4525,18 @@ PROCEDURE check_mobile_alarms (  p_alm_id            IN     NUMBER,
             END IF;
 
             --Resolve duplicated AUTO EMAIL alarm
-            IF v_auto_email_alarm_flag ='YD' THEN
+            IF g_processed_flag(g_alarm_count) in ('P','PML') AND v_auto_email_alarm_flag ='YD' THEN
                g_processed_flag(g_alarm_count) := 'Y';
                g_auto_email_alarm_flag(g_alarm_count) :='YD';
-               g_last_action_name(g_alarm_count) := 'DUPLICATE_RESOLVED';
+               g_last_action_name(g_alarm_count) := 'DUPLICATE_AUTO_PROCESS';
                g_last_action_comments(g_alarm_count) := 'Resolved by duplicated Email rule';
                g_ins_current_status(g_alarm_count) := 'Resolved';
             END IF;
 
-            --auto email all Kwik Trip RTN alarms
+              --auto email all Kwik Trip RTN alarms
            IF v_rtn_date IS NOT NULL AND lt_cust_id(i) = '001f4000005i6CwAAI' THEN
              g_auto_email_alarm_flag(g_alarm_count) :='YR';
            END IF;
-
-
 
             dbms_output.put_line( 'Auto email flag :' || v_email_alarm_flag );
             dbms_output.put_line( 'Auto processed flag==== :' || g_processed_flag (g_alarm_count) );
